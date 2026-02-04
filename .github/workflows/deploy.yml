@@ -1,4 +1,4 @@
-name: Deploy CryptonicAPI to AWS
+name: Deploy CryptonicAPI to Sthlm
 
 on:
   push:
@@ -28,18 +28,21 @@ jobs:
         fi
         
         echo "Bygger projekt: $PROJECT_PATH"
-        # Bygg appen (Self-Contained för att .NET 10 ska funka på Linux)
+        # Bygg appen till mappen 'out'
         dotnet publish "$PROJECT_PATH" -c Release -r linux-x64 --self-contained true -o out
 
-    - name: Skapa Procfile (Lösningen på 503!)
+    - name: Skapa Procfile (Viktigt för Linux!)
       run: |
+        # Skapa start-instruktionen
         echo "web: ./CryptonicAPI" > out/Procfile
+        # Ge kör-rättigheter
         chmod +x out/CryptonicAPI
 
-    - name: Skapa Zip-fil
+    - name: Skapa Zip-fil (Förenklad)
       run: |
+        # Gå in i out-mappen och zippa innehållet till en fil som hamnar i roten (../)
         cd out
-        zip -r ${{ github.workspace }}/deploy.zip .
+        zip -r ../deploy.zip .
 
     - name: Deploy to Elastic Beanstalk
       uses: einaregilsson/beanstalk-deploy@v22
@@ -50,4 +53,4 @@ jobs:
         environment_name: 'CryptonicAPI-env'
         version_label: "v-${{ github.run_id }}"
         region: eu-north-1
-        deployment_package: deploy.zipdeploy.zip
+        deployment_package: deploy.zip
