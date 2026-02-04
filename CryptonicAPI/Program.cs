@@ -7,6 +7,8 @@ var app = builder.Build();
 
 app.MapOpenApi();
 
+app.MapGet("/", () => "CryptonicAPI är igång! 🚀");
+
 // app.UseHttpsRedirection(); 
 
 app.UseAuthorization();
