@@ -1,4 +1,4 @@
-name: Deploy CryptonicAPI to Sthlm
+name: Deploy CryptonicAPI
 
 on:
   push:
@@ -13,36 +13,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup .NET SDK
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
 
-    - name: Hitta och Bygg Appen
-      run: |
-        # Hitta var .csproj ligger
-        PROJECT_PATH=$(find . -name "*.csproj" | head -n 1)
-        if [ -z "$PROJECT_PATH" ]; then
-          echo "FEL: Hittade ingen .csproj fil!"
-          exit 1
-        fi
-        
-        echo "Bygger projekt: $PROJECT_PATH"
-        # Bygg appen (Self-Contained för att .NET 10 ska funka på Linux)
-        dotnet publish "$PROJECT_PATH" -c Release -r linux-x64 --self-contained true -o out
+    - name: Build and Publish
+      run: dotnet publish CryptonicAPI/CryptonicAPI.csproj -c Release -r linux-x64 --self-contained true -o out
 
-    - name: Skapa Procfile (Lösningen på 503!)
-      run: |
-        # 1. Skapa en fil som säger åt AWS: "Kör filen CryptonicAPI!"
-        echo "web: ./CryptonicAPI" > out/Procfile
-        
-        # 2. VIKTIGT: Ge filen tillåtelse att köras (Linux-rättigheter)
-        chmod +x out/CryptonicAPI
-
-    - name: Skapa Zip-fil
+    - name: Generate Deployment Package
       run: |
         cd out
-        zip -r ${{ github.workspace }}/deploy.zip .
+        zip -r ../deploy.zip .
 
     - name: Deploy to Elastic Beanstalk
       uses: einaregilsson/beanstalk-deploy@v22
