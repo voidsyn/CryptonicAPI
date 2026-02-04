@@ -18,18 +18,23 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    - name: Hitta och Bygg Appen (Auto-Detect)
+    - name: Hitta och Bygg Appen
       run: |
+        # Hitta var .csproj ligger
         PROJECT_PATH=$(find . -name "*.csproj" | head -n 1)
-        
         if [ -z "$PROJECT_PATH" ]; then
-          echo "FEL: Hittade ingen .csproj fil! Kolla att du pushat koden."
+          echo "FEL: Hittade ingen .csproj fil!"
           exit 1
         fi
-
-        echo "Hittade projektfilen här: $PROJECT_PATH"
         
+        echo "Bygger projekt: $PROJECT_PATH"
+        # Bygg appen (Self-Contained för att .NET 10 ska funka på Linux)
         dotnet publish "$PROJECT_PATH" -c Release -r linux-x64 --self-contained true -o out
+
+    - name: Skapa Procfile (Lösningen på 503!)
+      run: |
+        echo "web: ./CryptonicAPI" > out/Procfile
+        chmod +x out/CryptonicAPI
 
     - name: Skapa Zip-fil
       run: |
@@ -45,4 +50,4 @@ jobs:
         environment_name: 'CryptonicAPI-env'
         version_label: "v-${{ github.run_id }}"
         region: eu-north-1
-        deployment_package: deploy.zip
+        deployment_package: deploy.zipdeploy.zip
