@@ -5,10 +5,12 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-app.MapGet("/", () => "CryptonicAPI");
-
 app.MapOpenApi();
+
+// app.UseHttpsRedirection(); 
+
 app.UseAuthorization();
+
 app.MapControllers();
 
-app.Run("http://0.0.0.0:8080");
+app.Run();
