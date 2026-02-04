@@ -28,21 +28,21 @@ jobs:
         fi
         
         echo "Bygger projekt: $PROJECT_PATH"
-        # Bygg appen till mappen 'out'
+        # Bygg appen (Self-Contained för att .NET 10 ska funka på Linux)
         dotnet publish "$PROJECT_PATH" -c Release -r linux-x64 --self-contained true -o out
 
-    - name: Skapa Procfile (Viktigt för Linux!)
+    - name: Skapa Procfile (Lösningen på 503!)
       run: |
-        # Skapa start-instruktionen
+        # 1. Skapa en fil som säger åt AWS: "Kör filen CryptonicAPI!"
         echo "web: ./CryptonicAPI" > out/Procfile
-        # Ge kör-rättigheter
+        
+        # 2. VIKTIGT: Ge filen tillåtelse att köras (Linux-rättigheter)
         chmod +x out/CryptonicAPI
 
-    - name: Skapa Zip-fil (Förenklad)
+    - name: Skapa Zip-fil
       run: |
-        # Gå in i out-mappen och zippa innehållet till en fil som hamnar i roten (../)
         cd out
-        zip -r ../deploy.zip .
+        zip -r ${{ github.workspace }}/deploy.zip .
 
     - name: Deploy to Elastic Beanstalk
       uses: einaregilsson/beanstalk-deploy@v22
