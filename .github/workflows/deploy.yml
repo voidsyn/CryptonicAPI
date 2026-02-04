@@ -1,4 +1,4 @@
-name: Deploy CryptonicAPI to AWS
+name: Deploy CryptonicAPI to Sthlm
 
 on:
   push:
@@ -18,18 +18,26 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    - name: Hitta och Bygg Appen (Auto-Detect)
+    - name: Hitta och Bygg Appen
       run: |
+        # Hitta var .csproj ligger
         PROJECT_PATH=$(find . -name "*.csproj" | head -n 1)
-        
         if [ -z "$PROJECT_PATH" ]; then
-          echo "FEL: Hittade ingen .csproj fil! Kolla att du pushat koden."
+          echo "FEL: Hittade ingen .csproj fil!"
           exit 1
         fi
-
-        echo "Hittade projektfilen här: $PROJECT_PATH"
         
+        echo "Bygger projekt: $PROJECT_PATH"
+        # Bygg appen (Self-Contained för att .NET 10 ska funka på Linux)
         dotnet publish "$PROJECT_PATH" -c Release -r linux-x64 --self-contained true -o out
+
+    - name: Skapa Procfile (Lösningen på 503!)
+      run: |
+        # 1. Skapa en fil som säger åt AWS: "Kör filen CryptonicAPI!"
+        echo "web: ./CryptonicAPI" > out/Procfile
+        
+        # 2. VIKTIGT: Ge filen tillåtelse att köras (Linux-rättigheter)
+        chmod +x out/CryptonicAPI
 
     - name: Skapa Zip-fil
       run: |
