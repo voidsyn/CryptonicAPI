@@ -3,7 +3,7 @@ name: Deploy CryptonicAPI to AWS
 on:
   push:
     branches:
-      - master  
+      - master
   workflow_dispatch:
 
 jobs:
@@ -13,19 +13,29 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup .NET 10
+    - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
 
-    - name: Publish App
-      run: dotnet publish CryptonicAPI/CryptonicAPI.csproj -c Release -r linux-x64 --self-contained true -o out
+    - name: Hitta och Bygg Appen (Auto-Detect)
+      run: |
+        PROJECT_PATH=$(find . -name "*.csproj" | head -n 1)
+        
+        if [ -z "$PROJECT_PATH" ]; then
+          echo "FEL: Hittade ingen .csproj fil! Kolla att du pushat koden."
+          exit 1
+        fi
 
-    - name: Generate Deployment Package
+        echo "Hittade projektfilen här: $PROJECT_PATH"
+        
+        dotnet publish "$PROJECT_PATH" -c Release -r linux-x64 --self-contained true -o out
+
+    - name: Skapa Zip-fil
       run: |
         cd out
-        zip -r ../deploy.zip .
-      
+        zip -r ${{ github.workspace }}/deploy.zip .
+
     - name: Deploy to Elastic Beanstalk
       uses: einaregilsson/beanstalk-deploy@v22
       with:
@@ -35,4 +45,4 @@ jobs:
         environment_name: 'CryptonicAPI-env'
         version_label: "v-${{ github.run_id }}"
         region: eu-north-1
-        deployment_package:
+        deployment_package: deploy.zip
