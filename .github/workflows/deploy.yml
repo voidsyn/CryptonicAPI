@@ -19,16 +19,13 @@ jobs:
         dotnet-version: '10.0.x'
 
     - name: Run Unit Tests
-      run:
-        dotnet test CryptonicAPI.Tests/CryptonicAPI.Tests.csproj
+      run: dotnet test CryptonicAPI.Tests/CryptonicAPI.Tests.csproj
 
     - name: Build and Publish
       run: dotnet publish CryptonicAPI/CryptonicAPI.csproj -c Release -r linux-x64 --self-contained true -o out
 
     - name: Generate Deployment Package
-      run:
-        cd out
-        zip -r ../deploy.zip .
+      run: cd out && zip -r ../deploy.zip .
 
     - name: Deploy to Elastic Beanstalk
       uses: einaregilsson/beanstalk-deploy@v22
