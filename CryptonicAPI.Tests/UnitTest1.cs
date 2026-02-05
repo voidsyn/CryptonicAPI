@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿#nullable disable
+using Xunit;
 using CryptonicAPI.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,15 +13,13 @@ namespace CryptonicAPI.Tests
             // 1. ARRANGE
             var controller = new EncryptionController();
             string input = "Hej";
-            string expected = "Hohejoj"; 
+            string expected = "Hohejoj";
 
             // 2. ACT
             var result = controller.Encrypt(input) as OkObjectResult;
 
             // 3. ASSERT
-            Assert.NotNull(result);
-
-            var jsonResult = result.Value.ToString();
+            Assert.NotNull(result); 
 
             Assert.Contains(expected, result.Value.ToString());
         }
